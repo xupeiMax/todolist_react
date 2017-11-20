@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>todoApp</title>
+    <style>
+         #root{
+            margin: 0 auto;
+            width: 400px;
+        }
+        .add-input{
+            width: 250px;
+            height: 24px;
+        }
+        .add-button{
+            height: 30px;
+        }
+        .liStyle{
+            list-style: none;
+            user-select: none;
+            font-size: 14px;
+        }
+        p{
+            display: inline;
+            margin: 0 2px;
+        }
+        .item-label{
+            text-decoration:none;
+        }
+        .item-status{
+            background-color: red;
+            color: #fff;
+            font-size: 10px;
+            padding: 0 5px;
+            display: inline
+        }
+        .item-delete{
+            text-decoration:underline;
+            color: gray;
+            font-size: 10px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react-dom.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        class TodoApp extends React.Component {
+            constructor(props){
+                super(props);
+                this.handleChange = this.handleChange.bind(this);
+                this.handleSubmit = this.handleSubmit.bind(this);
+                this.deleteItem = this.deleteItem.bind(this);
+                this.state = {items:[],text:''};
+            }
+
+            render(){
+                var i;
+                return(
+                    <div>
+                        <h3>TODO</h3>
+                        <form onSubmit={this.handleSubmit}>
+                            <input onChange={this.handleChange} value={this.state.text} className="add-input"/>
+                            <button className="add-button">{'Add #' + (this.state.items.length + 1)}</button>
+                        </form>
+                        <ul>
+                        {this.state.items.map((item,i) => (
+                        <TodoList key={i} index={i} deleteItem={this.deleteItem}>{i+1}. {item.text}</TodoList>
+                        ))}
+                        </ul>
+                    </div>
+                );
+            }
+
+            deleteItem(i){
+                var arr = this.state.items;
+                arr.splice(i,1);
+                this.setState({items : arr});
+            }
+
+            handleChange(e){
+                this.setState({text:e.target.value});
+            }
+
+            handleSubmit(e){
+                e.preventDefault();
+                var newItem = {
+                    text: this.state.text,
+                    index: this.state.items.length + 1,
+                    isfin: false
+                };
+                this.setState((prevState) => ({
+                    items: prevState.items.concat(newItem),
+                    text: ''
+                }));
+            }
+        }
+
+        class TodoList extends React.Component {
+            constructor(props){
+                super(props);
+                this.toggleChange = this.toggleChange.bind(this);
+                this.remove = this.remove.bind(this);
+                this.state = {isfin: false,isShow:false}; 
+            }
+
+            render(){
+                return(   
+                    <li className="liStyle">
+                        <h3>
+                            <p className="item-label"  onClick={this.toggleChange}>{this.props.children}</p>
+                            {this.state.isfin ? (<p className="item-status">finished</p>) : ''}
+                            <p className="item-delete" onClick={this.remove}>Delete</p>   
+                        </h3>
+                    </li> 
+                );
+            }
+
+            toggleChange(e){
+                this.setState(prevState => ({
+                    isfin: !prevState.isfin
+                }));
+                if(e.currentTarget.style.textDecoration==="line-through"){
+                    e.currentTarget.style.textDecoration="none";
+                }else{
+                    e.currentTarget.style.textDecoration="line-through";
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            remove(e){
+               this.props.deleteItem(this.props.index)
+            }
+        }
+
+        ReactDOM.render(<TodoApp />,document.getElementById('root'));
+    </script>
+</body>
+</html>
