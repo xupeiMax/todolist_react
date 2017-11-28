@@ -42,6 +42,9 @@
             font-size: 10px;
             cursor: pointer;
         }
+        .is-linethrough{
+            text-decoration: line-through;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react-dom.js"></script>
@@ -56,6 +59,7 @@
                 this.handleChange = this.handleChange.bind(this);
                 this.handleSubmit = this.handleSubmit.bind(this);
                 this.deleteItem = this.deleteItem.bind(this);
+                this.updateItem = this.updateItem.bind(this);
                 this.state = {items:[],text:''};
             }
 
@@ -70,11 +74,19 @@
                         </form>
                         <ul>
                         {this.state.items.map((item,i) => (
-                        <TodoList key={i} index={i} deleteItem={this.deleteItem}>{i+1}. {item.text}</TodoList>
+                        <TodoList key={i} index={i} data={item} updateItem={this.updateItem} deleteItem={this.deleteItem}>{i+1}. {item.text}</TodoList>
                         ))}
                         </ul>
                     </div>
                 );
+            }
+
+            updateItem(b,i){
+                var arr = this.state.items;
+                arr[i].isfin = b;
+                this.setState({
+                    items: arr
+                })  
             }
 
             deleteItem(i){
@@ -91,7 +103,7 @@
                 e.preventDefault();
                 var newItem = {
                     text: this.state.text,
-                    index: this.state.items.length + 1
+                    isfin:false
                 };
                 this.setState((prevState) => ({
                     items: prevState.items.concat(newItem),
@@ -105,35 +117,29 @@
                 super(props);
                 this.toggleChange = this.toggleChange.bind(this);
                 this.remove = this.remove.bind(this);
-                this.state = {isfin: false}; 
+                this.state = {isfin: this.props.data.isfin}; 
             }
 
             render(){
+                var itemLabelClassName = "item-label";
+                itemLabelClassName += this.props.data.isfin ? ' is-linethrough':'';
                 return(   
                     <li className="liStyle">
                         <h3>
-                            <p className="item-label"  onClick={this.toggleChange}>{this.props.children}</p>
-                            {this.state.isfin ? (<p className="item-status">finished</p>) : ''}
+                            <p className={itemLabelClassName} onClick={this.toggleChange}>{this.props.children}</p>
+                            {this.props.data.isfin ? (<p className="item-status">finished</p>) : ''}
                             <p className="item-delete" onClick={this.remove}>Delete</p>   
                         </h3>
                     </li> 
                 );
             }
 
-            toggleChange(e){
-                this.setState(prevState => ({
-                    isfin: !prevState.isfin
-                }));
-                if(e.currentTarget.style.textDecoration==="line-through"){
-                    e.currentTarget.style.textDecoration="none";
-                }else{
-                    e.currentTarget.style.textDecoration="line-through";
-                }
-                e.preventDefault();
-                e.stopPropagation();
+            toggleChange(){
+                var val = !this.props.data.isfin;
+                this.props.updateItem(val,this.props.index);
             }
-            
-            remove(e){
+
+            remove(){
                this.props.deleteItem(this.props.index)
             }
         }
